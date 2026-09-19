@@ -1,0 +1,131 @@
+/* Logical ICT Theme Variables */
+:root {
+  --navy: #0A3D62;
+  --orange: #FF8C00;
+  --orange-light: rgba(255, 140, 0, 0.2);
+  --danger: #DC2626;
+  --danger-hover: #B91C1C;
+  --dark-slate: #1e293b;
+  --card-slate: #334155;
+  --whatsapp: #25D366;
+  --facebook: #1877F2;
+  --youtube: #FF0000;
+  --tiktok: #000000;
+}
+
+/* Background Animation */
+@keyframes scroll-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-33.333%); }
+}
+
+.animate-scroll-left {
+  animation: scroll-left 30s linear infinite;
+  display: flex;
+}
+
+/* Navbars */
+.nav-main { background-color: var(--navy); }
+
+/* Navigation Links & Hover Effects */
+.nav-link-item {
+  cursor: pointer;
+  transition: color 0.2s;
+  font-weight: 600;
+}
+.nav-link-item:hover { color: var(--orange) !important; }
+.nav-link-active { color: var(--orange) !important; }
+
+/* Batch Selection Buttons */
+.batch-btn {
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: bold;
+  border-radius: 8px;
+}
+.batch-btn:hover:not(.selected) {
+  background-color: var(--orange-light) !important;
+}
+.batch-btn.selected {
+  background-color: var(--orange) !important;
+}
+
+/* Logout Button */
+.btn-logout {
+  background-color: var(--danger);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.btn-logout:hover { background-color: var(--danger-hover); }
+
+/* Section Containers */
+.bg-dark-section { background-color: var(--dark-slate); }
+.feature-card {
+  background-color: var(--card-slate);
+  border-left: 4px solid var(--orange);
+}
+
+/* Social Buttons */
+.social-card {
+  background-color: var(--card-slate);
+  transition: all 0.3s;
+}
+.social-card:hover { transform: translateY(-4px); }
+
+.social-wa { border-left: 4px solid var(--whatsapp); }
+.social-fb { border-left: 4px solid var(--facebook); }
+.social-yt { border-left: 4px solid var(--youtube); }
+.social-tk { border-left: 4px solid var(--tiktok); }
+
+/* Dashboard Components */
+.batch-header-box { border-left: 8px solid var(--orange); }
+.notification-box { border-top: 8px solid var(--orange); }
+.notification-item { border-left: 4px solid var(--orange); }
+
+.spinner-orange { border-top-color: var(--orange); border-bottom-color: var(--orange); }
+
+/* Container to maintain the layout spot */
+.logo-right-container {
+  position: relative;
+  width: 140px; /* Give enough horizontal space for the bigger image */
+  height: 64px;  /* Matches your navbar h-16 */
+  display: flex;
+  align-items: center;
+}
+
+/* The actual image */
+.logo-right-expanded {
+  position: absolute;
+  right: 0;
+  height: 100px; /* Increase this number to make it even bigger */
+  width: auto;
+  object-fit: contain;
+  z-index: 30;
+  /* Adds a slight shadow to make it stand out from the navy */
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); 
+  transition: transform 0.2s ease-in-out;
+}
+
+.logo-right-expanded:hover {
+  transform: scale(1.1); /* Optional: pops out slightly on hover */
+}
+
+/* 1. Define your Sinhala Font */
+@font-face {
+  font-family: 'Sinhala4uMalith';
+  src: url('./fonts/4u-malith.ttf') format('truetype');
+}
+
+/* 2. Set the default font for the whole site (English/Numbers) */
+body {
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+/* 3. Create a class for Sinhala parts */
+.si {
+  font-family: 'Sinhala4uMalith', sans-serif;
+  /* Sinhala fonts usually look smaller than English at the same size, 
+     so we slightly increase the scale */
+  font-size: 1.1em; 
+  line-height: 1.6;
+}

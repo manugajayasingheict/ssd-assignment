@@ -1,0 +1,79 @@
+/* Logical ICT Theme Variables */
+:root {
+  --navy: #0A3D62;
+  --orange: #FF8C00;
+  --orange-light: #fff7ed;
+  --bg-light: #F5F5F5;
+  --white: #ffffff;
+}
+
+/* Base Page Styles */
+.class-view-page {
+  background-color: var(--bg-light);
+  min-height: 100vh;
+}
+
+/* Background Animation */
+@keyframes scroll-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-33.333%); }
+}
+
+.bg-scrolling-container {
+  height: 200vh;
+  display: flex;
+  animation: scroll-left 30s linear infinite;
+}
+
+/* Navigation & Header */
+.header-navy {
+  background-color: var(--navy);
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.text-navy { color: var(--navy); }
+.text-orange { color: var(--orange); }
+
+/* Buttons */
+.btn-orange {
+  background-color: var(--orange);
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.btn-orange:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+/* Section Cards */
+.content-card {
+  background-color: var(--white);
+  border-radius: 1.25rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.zoom-section { border-left: 8px solid var(--orange); }
+.recordings-section { border-top: 8px solid var(--orange); }
+
+/* Elements */
+.recording-header {
+  background-color: var(--orange);
+  padding: 1.25rem;
+}
+
+.passcode-box {
+  font-family: monospace;
+  background-color: #e5e7eb;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.loading-spinner {
+  border-top-color: var(--orange);
+  border-bottom-color: var(--orange);
+}

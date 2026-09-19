@@ -1,0 +1,207 @@
+/* Container and Layout */
+.admin-user-container {
+  padding: 40px;
+  background-color: #f8fafc; /* light-gray from dashboard */
+  min-height: 100vh;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Back Button */
+.btn-back {
+  padding: 10px 20px;
+  background-color: transparent;
+  border: 2px solid #0A3D62; /* Navy */
+  color: #0A3D62;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 25px;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-back:hover {
+  background-color: #0A3D62;
+  color: white;
+  transform: translateX(-3px);
+}
+
+/* Page Header */
+.user-list-title {
+  color: #0A3D62; /* Navy */
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 30px;
+  border-left: 5px solid #FF8C00; /* Orange */
+  padding-left: 15px;
+}
+
+/* Table Wrapper for Modern Look */
+.user-table-wrapper {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Table Headers */
+.user-table th {
+  background-color: #0A3D62; /* Navy */
+  color: white;
+  text-align: left;
+  padding: 16px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+/* Table Data Cells */
+.user-table td {
+  padding: 16px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #334155;
+  font-size: 0.95rem;
+}
+
+/* Hover Effect for Rows */
+.user-table tr:hover td {
+  background-color: #f1f5f9;
+}
+
+/* Badge for the Batch column to make it pop */
+.batch-badge {
+  background-color: #fef9c3;
+  color: #854d0e;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.status-badge.verified {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.status-badge.unverified {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+/* Ensure table cells align correctly */
+.user-table td {
+  vertical-align: middle;
+}
+.btn-delete-user {
+  background: none;
+  border: none;
+  color: #ef4444; /* Red color */
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-delete-user:hover {
+  background-color: #fee2e2;
+  transform: scale(1.1);
+}
+
+.user-table td {
+  vertical-align: middle;
+}
+.nic-info-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nic-text {
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.nic-links {
+  display: flex;
+  gap: 8px;
+}
+
+.nic-links a {
+  font-size: 11px;
+  color: #ff8c00;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-weight: bold;
+}
+
+.nic-links a:hover {
+  text-decoration: underline;
+}
+
+.admin-actions-cell {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-action {
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-verify {
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+
+.btn-verify:hover {
+  background-color: #dcfce7;
+}
+
+.btn-unverify {
+  background-color: #fff7ed;
+  color: #ea580c;
+}
+
+.btn-unverify:hover {
+  background-color: #ffedd5;
+}
+
+.btn-delete {
+  background-color: #fef2f2;
+  color: #dc2626;
+}
+
+.btn-delete:hover {
+  background-color: #fee2e2;
+}

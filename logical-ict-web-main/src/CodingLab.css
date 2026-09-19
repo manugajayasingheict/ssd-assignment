@@ -1,0 +1,119 @@
+:root {
+  --navy: #0A3D62;
+  --navy-dark: #052136;
+  --orange: #FF8C00;
+  --orange-bright: #FFA500;
+  --bg-editor: #1e1e1e;
+  --white: #ffffff;
+}
+
+.lab-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f8fafc;
+  overflow: hidden;
+}
+
+/* Navigation & Controls Header */
+.lab-header {
+  background-color: var(--navy);
+  padding: 12px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  z-index: 50;
+}
+
+.lab-brand {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.lab-title {
+  font-size: 1.5rem;
+  font-weight: 900;
+}
+
+.controls-cluster {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.btn-lab {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.btn-run { background-color: var(--orange); color: white; }
+.btn-run:hover { background-color: var(--orange-bright); transform: translateY(-1px); }
+
+.btn-ai { background-color: #6366f1; color: white; }
+.btn-ai:hover { box-shadow: 0 0 15px rgba(99, 102, 241, 0.4); }
+
+.lang-picker {
+  padding: 10px;
+  border-radius: 8px;
+  background: white;
+  font-weight: 700;
+  border: 2px solid var(--orange);
+  cursor: pointer;
+  color: var(--navy);
+}
+
+/* Editor & Output Workspace */
+.lab-workspace {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.pane-editor {
+  flex: 1;
+  border-right: 5px solid #e2e8f0;
+  background: var(--bg-editor);
+}
+
+.pane-output {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+}
+
+.pane-label {
+  padding: 10px 20px;
+  background: #f1f5f9;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  font-weight: 900;
+  color: var(--navy);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+#preview-frame {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: white;
+}
+
+#console-fallback {
+  flex: 1;
+  padding: 30px;
+  font-family: 'Fira Code', 'Courier New', monospace;
+  color: #64748b;
+  line-height: 1.8;
+  background: #fafafa;
+}
