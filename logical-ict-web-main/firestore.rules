@@ -28,17 +28,18 @@ service cloud.firestore {
     (
       (
         request.auth.uid == userId &&
+        request.resource.data.batch == resource.data.batch &&
         (
           (
             resource.data.keys().hasAny(['role']) &&
             request.resource.data.role == resource.data.role
-          )
-          ||
-          (
-            !resource.data.keys().hasAny(['role']) &&
-            request.resource.data.role == "student"
-          )
-        )
+            )
+            ||
+            (
+              !resource.data.keys().hasAny(['role']) &&
+              request.resource.data.role == "student"
+              )
+)
       )
       ||
       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
