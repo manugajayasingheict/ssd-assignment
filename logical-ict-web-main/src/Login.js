@@ -50,6 +50,7 @@ export default function Login({ onLogin, onNewUser, onAdminLogin }) {
         await setDoc(doc(db, "users", user.uid), {
           email: user.email,
           role: "student",
+          isVerified: user.emailVerified,
           createdAt: serverTimestamp(),
           isProfileComplete: false
         });
@@ -104,7 +105,8 @@ export default function Login({ onLogin, onNewUser, onAdminLogin }) {
           providerEmail: user.email,
           providerEmailVerified: true,
           createdAt: serverTimestamp(),
-          isProfileComplete: false
+          isProfileComplete: false,
+          isVerified: user.emailVerified
         });
         onNewUser();
       } else if (!docSnap.data().isProfileComplete) {

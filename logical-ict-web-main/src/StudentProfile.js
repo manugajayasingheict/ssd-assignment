@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { auth, db, storage } from "./firebase"; 
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { sendEmailVerification, signOut } from "firebase/auth";
-import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import { ref, uploadBytes, getBlob, deleteObject } from "firebase/storage";
 import { useNavigate } from "react-router-dom";
 import { 
   User, School, MapPin, Phone, Calendar, Mail,
@@ -23,6 +23,7 @@ export default function StudentProfile() {
 
   // States for NIC images
   const [nicFrontFile, setNicFrontFile] = useState(null);
+  const [documentUrls, setDocumentUrls] = useState({ front: null, back: null });
   const [nicBackFile, setNicBackFile] = useState(null);
 
   useEffect(() => {
@@ -54,6 +55,46 @@ export default function StudentProfile() {
     };
     fetchProfile();
   }, []);
+
+  useEffect(() => {
+  let active = true;
+
+  const loadDocumentUrls = async () => {
+    const urls = { front: null, back: null };
+
+    try {
+      if (profile?.nicFrontPath) {
+        urls.front = URL.createObjectURL(
+          await getBlob(ref(storage, profile.nicFrontPath))
+        );
+      }
+
+      if (profile?.nicBackPath) {
+        urls.back = URL.createObjectURL(
+          await getBlob(ref(storage, profile.nicBackPath))
+        );
+      }
+
+      if (active) {
+        setDocumentUrls(urls);
+      } else {
+        Object.values(urls)
+          .filter(Boolean)
+          .forEach((url) => URL.revokeObjectURL(url));
+      }
+    } catch (err) {
+      Object.values(urls)
+        .filter(Boolean)
+        .forEach((url) => URL.revokeObjectURL(url));
+    }
+  };
+
+  loadDocumentUrls();
+
+  return () => {
+    active = false;
+  };
+}, [profile?.nicFrontPath, profile?.nicBackPath]);
 
   const handleLogout = async () => {
     try {
@@ -104,7 +145,7 @@ export default function StudentProfile() {
       await deleteObject(fileRef);
 
       const docRef = doc(db, "users", user.uid);
-      const updateKey = side === 'front' ? 'nicFrontUrl' : 'nicBackUrl';
+      const updateKey = side === 'front' ? 'nicFrontPath' : 'nicBackPath';
       await updateDoc(docRef, { [updateKey]: null });
 
       const updatedProfile = { ...profile, [updateKey]: null };
@@ -150,13 +191,15 @@ export default function StudentProfile() {
       if (nicFrontFile) {
         const frontRef = ref(storage, `nic_documents/${user.uid}/front`);
         await uploadBytes(frontRef, nicFrontFile);
-        updatedData.nicFrontUrl = await getDownloadURL(frontRef);
+        updatedData.nicFrontPath = frontRef.fullPath;
+        updatedData.nicFrontUrl = null;
       }
 
       if (nicBackFile) {
         const backRef = ref(storage, `nic_documents/${user.uid}/back`);
         await uploadBytes(backRef, nicBackFile);
-        updatedData.nicBackUrl = await getDownloadURL(backRef);
+        updatedData.nicBackPath = backRef.fullPath;
+        updatedData.nicBackUrl = null;
       }
 
       const finalUpdateData = { ...updatedData, isVerified: user.emailVerified };
@@ -233,9 +276,9 @@ export default function StudentProfile() {
                       </label>
                     ) : (
                       <div className="nic-action-row">
-                        {profile?.nicFrontUrl ? (
+                        {documentUrls.front ? (
                           <>
-                            <a href={profile.nicFrontUrl} target="_blank" rel="noreferrer" className="view-link">View</a>
+                            <a href={documentUrls.front} target="_blank" rel="noreferrer" className="view-link">View</a>
                             <button type="button" onClick={() => handleDeleteDocument('front')} className="delete-doc-btn"><Trash2 size={14}/></button>
                           </>
                         ) : <span className="no-file">Missing</span>}
@@ -253,9 +296,9 @@ export default function StudentProfile() {
                       </label>
                     ) : (
                       <div className="nic-action-row">
-                        {profile?.nicBackUrl ? (
+                        {documentUrls.back ? (
                           <>
-                            <a href={profile.nicBackUrl} target="_blank" rel="noreferrer" className="view-link">View</a>
+                            <a href={documentUrls.back} target="_blank" rel="noreferrer" className="view-link">View</a>
                             <button type="button" onClick={() => handleDeleteDocument('back')} className="delete-doc-btn"><Trash2 size={14}/></button>
                           </>
                         ) : <span className="no-file">Missing</span>}
