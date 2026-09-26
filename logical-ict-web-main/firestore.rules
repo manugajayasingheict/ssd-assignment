@@ -29,6 +29,11 @@ service cloud.firestore {
       (
         request.auth.uid == userId &&
         request.resource.data.batch == resource.data.batch &&
+        request.resource.data.diff(resource.data).affectedKeys().hasNone([
+          'authProvider',
+          'providerEmail',
+          'providerEmailVerified'
+        ]) &&
         (
           (
             resource.data.keys().hasAny(['role']) &&
