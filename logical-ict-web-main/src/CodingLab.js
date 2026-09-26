@@ -147,7 +147,7 @@ export default function CodingLab() {
         <div className="pane-output">
           <div className="pane-label">{language === 'html' ? "Visual Preview" : "Console Output"}</div>
           {language === 'html' ? (
-            <iframe id="preview-frame" title="preview" srcDoc={previewDoc} />
+            <iframe id="preview-frame" title="preview" srcDoc={previewDoc} sandbox="allow-scripts" />
           ) : (
             <div id="console-fallback" className="bg-gray-900 text-green-400 p-6 font-mono overflow-auto flex-1">
               <pre className="whitespace-pre-wrap">{consoleOutput}</pre>
