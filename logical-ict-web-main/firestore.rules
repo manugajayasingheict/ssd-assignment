@@ -23,13 +23,14 @@ service cloud.firestore {
     }
 
     // --------------------------
-    // Enrollments: students can create/read/update their own (if not approved), admin can read/update all
+    // Enrollments: students can create/read their own; status changes are admin-only
     // --------------------------
     match /enrollments/{docId} {
 
-      // Any authenticated user can create their own enrollment
+      // Students can create only their own enrollment and it must start as pending
       allow create: if request.auth != null &&
-        request.resource.data.studentId == request.auth.uid;
+        request.resource.data.studentId == request.auth.uid &&
+        request.resource.data.status == "pending";
 
       // Students can read only their own enrollments; admin can read all
       allow read: if request.auth != null &&
@@ -38,14 +39,27 @@ service cloud.firestore {
           || (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin")
         );
 
-      // Students can update their own enrollment only if status is not "approved"
+      // Students may update only their own non-sensitive enrollment fields; no status or identity tampering
       allow update: if request.auth != null &&
         request.auth.uid == resource.data.studentId &&
-        resource.data.status != "approved";
+        request.resource.data.studentId == resource.data.studentId &&
+        request.resource.data.batch == resource.data.batch &&
+        request.resource.data.className == resource.data.className &&
+        request.resource.data.month == resource.data.month &&
+        request.resource.data.status == resource.data.status &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(["slipPath", "whatsappNumber", "updatedAt"]);
 
-      // Admin can update any enrollment
+      // Admin may update status only from pending to approved or rejected
       allow update: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin" &&
+        request.resource.data.studentId == resource.data.studentId &&
+        (
+          request.resource.data.status == resource.data.status
+          || (
+            resource.data.status == "pending" &&
+            request.resource.data.status in ["approved", "rejected"]
+          )
+        );
 
       // No one can delete enrollments
       allow delete: if false;
