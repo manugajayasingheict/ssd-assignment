@@ -4,7 +4,6 @@ import {
   getStorage,
   ref,
   uploadBytesResumable,
-  getDownloadURL,
 } from "firebase/storage";
 import { db } from "./firebase";
 import {
@@ -139,8 +138,6 @@ export default function ClassCard({ className, month, locked, batch }) {
           setUploading(false);
         },
         async () => {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-
           const enrollQuery = query(
             collection(db, "enrollments"),
             where("studentId", "==", currentUser.uid),
@@ -152,7 +149,7 @@ export default function ClassCard({ className, month, locked, batch }) {
           if (!snapshot.empty) {
             const docId = snapshot.docs[0].id;
             await updateDoc(doc(db, "enrollments", docId), {
-              slipUrl: downloadURL,
+              slipPath: uploadTask.snapshot.ref.fullPath,
               whatsappNumber: whatsapp,
               status: "pending",
               updatedAt: serverTimestamp(),
@@ -166,7 +163,7 @@ export default function ClassCard({ className, month, locked, batch }) {
               className: className || "unknown",
               month: month || "unknown",
               status: "pending",
-              slipUrl: downloadURL,
+              slipPath: uploadTask.snapshot.ref.fullPath,
               timestamp: serverTimestamp(),
             });
           }

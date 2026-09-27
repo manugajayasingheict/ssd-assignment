@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { db } from "./firebase";
+import { db, storage } from "./firebase";
 import {
   collection,
   query,
@@ -9,12 +9,14 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
+import { getBlob, ref } from "firebase/storage";
 import { ArrowLeft, CheckCircle, XCircle, ExternalLink, Loader2 } from "lucide-react";
 import "./AdminDashboard.css"; // Reuse your table styles
 
 export default function AdminEnrollments() {
   const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [slipUrls, setSlipUrls] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,6 +48,28 @@ export default function AdminEnrollments() {
 
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    let active = true;
+    const loadSlipUrls = async () => {
+      const urls = {};
+      await Promise.all(enrollments.map(async (enroll) => {
+        if (!enroll.slipPath) return;
+        try {
+          urls[enroll.id] = URL.createObjectURL(await getBlob(ref(storage, enroll.slipPath)));
+        } catch (err) {
+          console.error("Unable to load payment slip:", err);
+        }
+      }));
+      if (active) setSlipUrls(urls);
+      else Object.values(urls).forEach((url) => URL.revokeObjectURL(url));
+    };
+    loadSlipUrls();
+    return () => {
+      active = false;
+      Object.values(slipUrls).forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [enrollments]);
 
   const handleUpdateStatus = async (id, newStatus) => {
     try {
@@ -99,9 +123,9 @@ export default function AdminEnrollments() {
                     </span>
                   </td>
                   <td className="td-style">
-                    <a href={enroll.slipUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#0A3D62', fontWeight: 'bold' }}>
+                    {slipUrls[enroll.id] ? <a href={slipUrls[enroll.id]} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#0A3D62', fontWeight: 'bold' }}>
                       View Slip <ExternalLink size={14} />
-                    </a>
+                    </a> : <span>Unavailable</span>}
                   </td>
                   <td className="td-style">
                     <div style={{ display: 'flex', gap: '5px' }}>

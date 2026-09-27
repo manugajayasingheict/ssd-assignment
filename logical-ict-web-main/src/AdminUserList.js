@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { db, auth } from "./firebase";
+import { db, auth, storage } from "./firebase";
 import { collection, onSnapshot, doc, deleteDoc, updateDoc } from "firebase/firestore"; // 👈 Added updateDoc
 import { onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { CheckCircle2, XCircle, Trash2, UserCheck, UserX, ExternalLink } from "lucide-react"; // 👈 New icons
 import { showSuccess, showError } from "./utils/alerts";
+import { getBlob, ref } from "firebase/storage";
 import "./AdminUserList.css"; 
 
 export default function AdminUserList() {
   const [users, setUsers] = useState([]);
+  const [documentUrls, setDocumentUrls] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,6 +38,31 @@ export default function AdminUserList() {
       if (unsubSnapshot) unsubSnapshot();
     };
   }, []);     
+
+  useEffect(() => {
+    let active = true;
+    const loadDocumentUrls = async () => {
+      const urls = {};
+      await Promise.all(users.flatMap((user) => [
+        [user.id, "front", user.nicFrontPath],
+        [user.id, "back", user.nicBackPath]
+      ]).map(async ([userId, side, path]) => {
+        if (!path) return;
+        try {
+          urls[`${userId}-${side}`] = URL.createObjectURL(await getBlob(ref(storage, path)));
+        } catch (err) {
+          console.error("Unable to load NIC document:", err);
+        }
+      }));
+      if (active) setDocumentUrls(urls);
+      else Object.values(urls).forEach((url) => URL.revokeObjectURL(url));
+    };
+    loadDocumentUrls();
+    return () => {
+      active = false;
+      Object.values(documentUrls).forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [users]);
 
   // 👈 New Verification Logic
   const handleToggleVerification = async (userId, currentStatus) => {
@@ -104,13 +131,13 @@ export default function AdminUserList() {
                   <div className="nic-info-cell">
                     <span className="nic-text">{u.nic || "N/A"}</span>
                     <div className="nic-links">
-                      {u.nicFrontUrl && (
-                        <a href={u.nicFrontUrl} target="_blank" rel="noreferrer" title="Front Side">
+                      {documentUrls[`${u.id}-front`] && (
+                        <a href={documentUrls[`${u.id}-front`]} target="_blank" rel="noreferrer" title="Front Side">
                           Front <ExternalLink size={10} />
                         </a>
                       )}
-                      {u.nicBackUrl && (
-                        <a href={u.nicBackUrl} target="_blank" rel="noreferrer" title="Back Side">
+                      {documentUrls[`${u.id}-back`] && (
+                        <a href={documentUrls[`${u.id}-back`]} target="_blank" rel="noreferrer" title="Back Side">
                           Back <ExternalLink size={10} />
                         </a>
                       )}

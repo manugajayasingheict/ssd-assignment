@@ -49,6 +49,8 @@ export default function Login({ onLogin, onNewUser, onAdminLogin }) {
         user = cred.user;
         await setDoc(doc(db, "users", user.uid), {
           email: user.email,
+          role: "student",
+          isVerified: user.emailVerified,
           createdAt: serverTimestamp(),
           isProfileComplete: false
         });
@@ -73,8 +75,18 @@ export default function Login({ onLogin, onNewUser, onAdminLogin }) {
   const handleGoogleLogin = async () => {
     try {
       const provider = new GoogleAuthProvider();
+      provider.addScope("openid");
+      provider.addScope("profile");
+      provider.addScope("email");
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
+
+      const isGoogleUser = user.providerData.some(
+        ({ providerId }) => providerId === "google.com"
+      );
+      if (!isGoogleUser || !user.emailVerified) {
+        throw new Error("Google account verification failed. Please use a verified Google account.");
+      }
 
       if (user.email === ADMIN_EMAIL) {
         onAdminLogin();
@@ -88,8 +100,13 @@ export default function Login({ onLogin, onNewUser, onAdminLogin }) {
         await setDoc(docRef, {
           email: user.email,
           fullName: user.displayName || "",
+          role: "student",
+          authProvider: "google.com",
+          providerEmail: user.email,
+          providerEmailVerified: true,
           createdAt: serverTimestamp(),
-          isProfileComplete: false
+          isProfileComplete: false,
+          isVerified: user.emailVerified
         });
         onNewUser();
       } else if (!docSnap.data().isProfileComplete) {
