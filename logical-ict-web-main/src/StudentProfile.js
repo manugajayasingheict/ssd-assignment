@@ -1,14 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { auth, db, storage } from "./firebase"; 
+
+import { auth, db, storage } from "./firebase";
+
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { sendEmailVerification, signOut } from "firebase/auth";
+
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+
 import { useNavigate } from "react-router-dom";
-import { 
+
+import { sendEmailVerification, signOut, reload } from "firebase/auth";
+
+import {
   User, School, MapPin, Phone, Calendar, Mail,
   Home, CreditCard, Edit3, Save, X, ArrowLeft, Loader2, CheckCircle2, AlertCircle, Send, LogOut, Image as ImageIcon, UploadCloud, Trash2
+
 } from "lucide-react";
+
 import { showSuccess, showError } from "./utils/alerts";
+
 import "./StudentProfile.css";
 
 export default function StudentProfile() {
@@ -18,32 +27,25 @@ export default function StudentProfile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editData, setEditData] = useState({});
-  const [isVerified, setIsVerified] = useState(false); 
+  const [isVerified, setIsVerified] = useState(false);
   const [verifying, setVerifying] = useState(false);
-
   // States for NIC images
   const [nicFrontFile, setNicFrontFile] = useState(null);
   const [nicBackFile, setNicBackFile] = useState(null);
-
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const user = auth.currentUser;
         if (user) {
+          await reload(user);
           const liveVerifyStatus = user.emailVerified;
-          setIsVerified(liveVerifyStatus); 
-
+          setIsVerified(liveVerifyStatus);
           const docRef = doc(db, "users", user.uid);
           const docSnap = await getDoc(docRef);
-          
           if (docSnap.exists()) {
             const data = docSnap.data();
             setProfile(data);
             setEditData(data);
-
-            if (liveVerifyStatus && !data.isVerified) {
-              await updateDoc(docRef, { isVerified: true });
-            }
           }
         }
       } catch (err) {
@@ -54,17 +56,15 @@ export default function StudentProfile() {
     };
     fetchProfile();
   }, []);
-
   const handleLogout = async () => {
     try {
       await signOut(auth);
       showSuccess("Logged out successfully");
-      navigate("/"); 
+      navigate("/");
     } catch (err) {
       showError("Logout failed.");
     }
   };
-
   const handleVerifyEmail = async () => {
     setVerifying(true);
     try {
@@ -80,37 +80,28 @@ export default function StudentProfile() {
       setVerifying(false);
     }
   };
-
   const handleFileChange = (e, side) => {
     const file = e.target.files[0];
     if (!file) return;
-
     if (file.size > 2 * 1024 * 1024) {
       return showError("File too large! Maximum size is 2MB.");
     }
-
     if (side === 'front') setNicFrontFile(file);
     if (side === 'back') setNicBackFile(file);
   };
-
   const handleDeleteDocument = async (side) => {
     if (!window.confirm(`Delete ${side} NIC document?`)) return;
-    
     setSaving(true);
     try {
       const user = auth.currentUser;
       const fileRef = ref(storage, `nic_documents/${user.uid}/${side}`);
-      
       await deleteObject(fileRef);
-
       const docRef = doc(db, "users", user.uid);
       const updateKey = side === 'front' ? 'nicFrontUrl' : 'nicBackUrl';
       await updateDoc(docRef, { [updateKey]: null });
-
       const updatedProfile = { ...profile, [updateKey]: null };
       setProfile(updatedProfile);
       setEditData(updatedProfile);
-      
       showSuccess(`${side} NIC document deleted.`);
     } catch (err) {
       showError("Failed to delete document.");
@@ -118,7 +109,6 @@ export default function StudentProfile() {
       setSaving(false);
     }
   };
-
   const validate = () => {
     const { fullName, school, district, whatsapp, address, nic, batch } = editData;
     const isOLBatch = batch?.includes("OL");
@@ -133,36 +123,37 @@ export default function StudentProfile() {
     if (!whatsappPattern.test(whatsapp.trim())) return "Invalid WhatsApp Format! (+94771234567)";
     return null;
   };
-
   const handleUpdate = async (e) => {
     if (e) e.preventDefault();
     if (!isEditing) return;
-
     const errorMsg = validate();
-    if (errorMsg) return showError(errorMsg); 
-
+    if (errorMsg) return showError(errorMsg);
     setSaving(true);
     try {
       const user = auth.currentUser;
       const docRef = doc(db, "users", user.uid);
-      let updatedData = { ...editData };
+      let updatedData = {
+  fullName: editData.fullName,
+  school: editData.school,
+  district: editData.district,
+  whatsapp: editData.whatsapp,
+  address: editData.address,
+  nic: editData.nic,
 
+};
       if (nicFrontFile) {
         const frontRef = ref(storage, `nic_documents/${user.uid}/front`);
         await uploadBytes(frontRef, nicFrontFile);
         updatedData.nicFrontUrl = await getDownloadURL(frontRef);
       }
-
       if (nicBackFile) {
         const backRef = ref(storage, `nic_documents/${user.uid}/back`);
         await uploadBytes(backRef, nicBackFile);
         updatedData.nicBackUrl = await getDownloadURL(backRef);
       }
-
-      const finalUpdateData = { ...updatedData, isVerified: user.emailVerified };
+      const finalUpdateData = updatedData;
       await updateDoc(docRef, finalUpdateData);
-      
-      setProfile(finalUpdateData);
+      setProfile((previous) => ({ ...previous, ...finalUpdateData }));
       setIsEditing(false);
       setNicFrontFile(null);
       setNicBackFile(null);
@@ -173,13 +164,11 @@ export default function StudentProfile() {
       setSaving(false);
     }
   };
-
   if (loading) return (
     <div className="profile-loader">
       <Loader2 className="animate-spin text-orange-500" size={48} />
     </div>
   );
-
   return (
     <div className="profile-page-container">
       <div className="profile-card">
@@ -200,26 +189,21 @@ export default function StudentProfile() {
           </div>
           <span className="batch-badge">{profile?.batch}</span>
         </div>
-
         <form onSubmit={handleUpdate} className="profile-content">
           <div className="info-grid">
             <ProfileField icon={<School size={18}/>} label="School" value={profile?.school} name="school" isEditing={isEditing} editData={editData} setEditData={setEditData} />
-            
-            <ProfileField 
+            <ProfileField
               icon={<Mail size={18}/>} label="Email Address (Gmail)" value={profile?.email} name="email"
               isEditing={isEditing} editData={editData} setEditData={setEditData}
               isReadOnly={true} isVerified={isVerified} onVerify={handleVerifyEmail} verifying={verifying}
             />
-
-            <ProfileField icon={<Calendar size={18}/>} label="Current Batch" value={profile?.batch} name="batch" isEditing={isEditing} editData={editData} setEditData={setEditData} isSelect selectType="batch" />
+            <ProfileField icon={<Calendar size={18}/>} label="Current Batch" value={profile?.batch} name="batch" isEditing={false} editData={editData} setEditData={setEditData} isSelect selectType="batch" />
             <ProfileField icon={<MapPin size={18}/>} label="District" value={profile?.district} name="district" isEditing={isEditing} editData={editData} setEditData={setEditData} isSelect selectType="district" />
             <ProfileField icon={<Phone size={18}/>} label="WhatsApp (+94...)" value={profile?.whatsapp} name="whatsapp" isEditing={isEditing} editData={editData} setEditData={setEditData} />
             <ProfileField icon={<CreditCard size={18}/>} label={editData?.batch?.includes("OL") ? "Parent NIC" : "Student NIC"} value={profile?.nic} name="nic" isEditing={isEditing} editData={editData} setEditData={setEditData} />
-            
             <div className="full-width">
               <ProfileField icon={<Home size={18}/>} label="Delivery Address" value={profile?.address} name="address" isEditing={isEditing} editData={editData} setEditData={setEditData} isTextArea />
             </div>
-
             <div className="full-width nic-upload-section">
                <label className="field-label"><ImageIcon size={18} /> NIC Proof Documents (Max 2MB)</label>
                <div className="nic-grid">
@@ -242,7 +226,6 @@ export default function StudentProfile() {
                       </div>
                     )}
                   </div>
-
                   <div className="nic-upload-box">
                     <span>Back Side</span>
                     {isEditing ? (
@@ -265,7 +248,6 @@ export default function StudentProfile() {
                </div>
             </div>
           </div>
-
           <div className="action-row">
             {isEditing ? (
               <div className="edit-actions-group">
@@ -291,13 +273,13 @@ export default function StudentProfile() {
       </div>
     </div>
   );
+
 }
 
 function ProfileField({ icon, label, value, name, isEditing, editData, setEditData, isTextArea, isSelect, selectType, isReadOnly, isVerified, onVerify, verifying }) {
   const batches = ["2026 AL", "2027 AL", "2028 AL", "2026 OL", "2027 OL"];
   const districts = ["Ampara", "Anuradhapura", "Badulla", "Batticaloa", "Colombo", "Galle", "Gampaha", "Hambantota", "Jaffna", "Kalutara", "Kandy", "Kegalle", "Kilinochchi", "Kurunegala", "Mannar", "Matale", "Matara", "Moneragala", "Mullaitivu", "Nuwara Eliya", "Polonnaruwa", "Puttalam", "Ratnapura", "Trincomalee", "Vavuniya"];
   const options = selectType === "batch" ? batches : districts;
-
   return (
     <div className="field-group">
       <label className="field-label"><span className="field-icon">{icon}</span> {label}</label>
@@ -336,4 +318,5 @@ function ProfileField({ icon, label, value, name, isEditing, editData, setEditDa
       )}
     </div>
   );
+
 }
