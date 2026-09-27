@@ -39,11 +39,15 @@ service cloud.firestore {
           || (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin")
         );
 
-      // Students may update their own enrollment only when they keep the same status
+      // Students may update only their own non-sensitive enrollment fields; no status or identity tampering
       allow update: if request.auth != null &&
         request.auth.uid == resource.data.studentId &&
-        request.resource.data.studentId == request.auth.uid &&
-        request.resource.data.status == resource.data.status;
+        request.resource.data.studentId == resource.data.studentId &&
+        request.resource.data.batch == resource.data.batch &&
+        request.resource.data.className == resource.data.className &&
+        request.resource.data.month == resource.data.month &&
+        request.resource.data.status == resource.data.status &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(["slipPath", "whatsappNumber", "updatedAt"]);
 
       // Admin may update status only from pending to approved or rejected
       allow update: if request.auth != null &&
