@@ -80,15 +80,59 @@ export default function StudentProfile() {
       setVerifying(false);
     }
   };
-  const handleFileChange = (e, side) => {
+  const handleFileChange = async (e, side) => {
     const file = e.target.files[0];
     if (!file) return;
+
     if (file.size > 2 * 1024 * 1024) {
       return showError("File too large! Maximum size is 2MB.");
     }
-    if (side === 'front') setNicFrontFile(file);
-    if (side === 'back') setNicBackFile(file);
+
+    // Read the actual file contents
+    const buffer = await file.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+
+    // JPEG signature: FF D8 FF
+    const isJPEG =
+      bytes.length >= 3 &&
+      bytes[0] === 0xFF &&
+      bytes[1] === 0xD8 &&
+      bytes[2] === 0xFF;
+
+    // PNG signature: 89 50 4E 47 0D 0A 1A 0A
+    const isPNG =
+      bytes.length >= 8 &&
+      bytes[0] === 0x89 &&
+      bytes[1] === 0x50 &&
+      bytes[2] === 0x4E &&
+      bytes[3] === 0x47 &&
+      bytes[4] === 0x0D &&
+      bytes[5] === 0x0A &&
+      bytes[6] === 0x1A &&
+      bytes[7] === 0x0A;
+
+    // WebP signature: RIFF....WEBP
+    const isWEBP =
+      bytes.length >= 12 &&
+      bytes[0] === 0x52 &&
+      bytes[1] === 0x49 &&
+      bytes[2] === 0x46 &&
+      bytes[3] === 0x46 &&
+      bytes[8] === 0x57 &&
+      bytes[9] === 0x45 &&
+      bytes[10] === 0x42 &&
+      bytes[11] === 0x50;
+
+    if (!isJPEG && !isPNG && !isWEBP) {
+      return showError(
+        "Invalid image file. Please upload a valid JPEG, PNG, or WebP image."
+      );
+    }
+
+    if (side === "front") setNicFrontFile(file);
+    if (side === "back") setNicBackFile(file);
   };
+
   const handleDeleteDocument = async (side) => {
     if (!window.confirm(`Delete ${side} NIC document?`)) return;
     setSaving(true);
