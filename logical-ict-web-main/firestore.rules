@@ -6,54 +6,38 @@ service cloud.firestore {
     // Users: students can read/write their own profile, admin can read/write all
     // --------------------------
     match /users/{userId} {
+      // Users can read their own profile.
+      // Admins can read any user profile.
+        allow read: if request.auth != null &&
+        (
+          request.auth.uid == userId
+          || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
+        );
 
-  // Users can read their own profile.
-  // Admins can read any user profile.
-  allow read: if request.auth != null &&
-    (
-      request.auth.uid == userId
-      || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
-    );
+      // Users can create their own profile.
+      allow create: if request.auth != null &&
+        request.auth.uid == userId;
 
-  // A new user can only create their own profile as a student.
-  allow create: if request.auth != null &&
-    request.auth.uid == userId &&
-    (
-      !request.resource.data.keys().hasAny(['role'])
-      || request.resource.data.role == "student"
-    );
-
-  // Students can update their own profile, but cannot change their role.
-  allow update: if request.auth != null &&
-    (
-      (
-        request.auth.uid == userId &&
-        request.resource.data.batch == resource.data.batch &&
-        request.resource.data.diff(resource.data).affectedKeys().hasNone([
-          'authProvider',
-          'providerEmail',
-          'providerEmailVerified'
-        ]) &&
+      // Students can update their own profile, but cannot change
+      // Google authentication identity fields.
+      allow update: if request.auth != null &&
         (
           (
-            resource.data.keys().hasAny(['role']) &&
-            request.resource.data.role == resource.data.role
-            )
-            ||
-            (
-              !resource.data.keys().hasAny(['role']) &&
-              request.resource.data.role == "student"
-              )
-)
+            request.auth.uid == userId &&
+            request.resource.data.diff(resource.data).affectedKeys().hasNone([
+              'authProvider',
+              'providerEmail',
+              'providerEmailVerified'
+            ])
       )
       ||
       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
     );
 
-  // No other writes.
-  allow delete: if request.auth != null &&
-    get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
-}
+    // Only admins can delete user profiles.
+    allow delete: if request.auth != null &&
+      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+    }
 
     // --------------------------
     // Batches: students can read, only admin can write
